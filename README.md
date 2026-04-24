@@ -40,7 +40,7 @@ A comprehensive fitness tracking Progressive Web App (PWA) built with Next.js, T
 
 1. Clone the repository:
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/PirATesofArabian/fitness_tracker.git
 cd fitness_tracker
 ```
 
