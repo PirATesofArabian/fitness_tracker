@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.0] - 2024-04-25
+
+### Added
+- Comprehensive onboarding system for first-time users
+- Beautiful welcome screen explaining why body composition data is required
+- Preview Mode: Users can explore the app before entering data
+- Yellow banner in preview mode with "Complete Setup" button
+- Automatic app unlock after body composition data is entered
+
+### Changed
+- App now requires body composition data before allowing data entry
+- Improved first-time user experience with guided setup flow
+
 ## [1.2.0] - 2024-04-25
 
 ### Added

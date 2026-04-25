@@ -257,11 +257,23 @@ export function ProfileSettings() {
   };
 
   const handleSaveBodyComp = (bodyComp: any) => {
+    const isFirstTime = !latestBodyComp && !editingBodyComp;
+    
     if (editingBodyComp) {
       updateBodyComp(bodyComp.id, bodyComp);
       setEditingBodyComp(null);
     } else {
       addBodyComp(bodyComp);
+    }
+    
+    // Close body comp dialog
+    setShowBodyCompDialog(false);
+    
+    // If first-time user, automatically open goal selector after saving
+    if (isFirstTime && bodyComp.height && bodyComp.age && bodyComp.gender) {
+      setTimeout(() => {
+        setShowUserDialog(true);
+      }, 300); // Small delay for smooth transition
     }
   };
 
@@ -307,7 +319,24 @@ export function ProfileSettings() {
           ) : (
             <div className="text-center py-4">
               <p className="text-muted-foreground mb-3">Set up your profile for accurate calculations</p>
-              <Button onClick={() => setShowUserDialog(true)}>
+              <Button onClick={() => {
+                // Check if this is truly first-time setup (no body comp data at all)
+                const hasBodyCompData = latestBodyComp && latestBodyComp.height && latestBodyComp.age && latestBodyComp.gender;
+                
+                console.log('Setup Profile clicked:', {
+                  hasBodyCompData,
+                  latestBodyComp,
+                  willShow: hasBodyCompData ? 'Goal Selector' : 'Body Composition Form'
+                });
+                
+                if (!hasBodyCompData) {
+                  // First-time user: redirect to body composition form
+                  setShowBodyCompDialog(true);
+                } else {
+                  // Has data: show goal selector
+                  setShowUserDialog(true);
+                }
+              }}>
                 <User className="h-4 w-4 mr-1" />
                 Set Profile
               </Button>
@@ -657,6 +686,16 @@ export function ProfileSettings() {
           <DialogHeader>
             <DialogTitle>{editingBodyComp ? 'Edit' : 'Log'} Body Composition</DialogTitle>
           </DialogHeader>
+          {!latestBodyComp && !editingBodyComp && (
+            <div className="p-3 rounded-lg bg-blue-500/10 border border-blue-500/20 mb-4">
+              <p className="text-sm text-blue-700 dark:text-blue-300 font-medium mb-1">
+                👋 Welcome! Let's set up your profile
+              </p>
+              <p className="text-xs text-blue-600 dark:text-blue-400">
+                Enter your body composition data to enable smart goal recommendations and accurate calorie calculations.
+              </p>
+            </div>
+          )}
           <BodyCompForm
             onSave={handleSaveBodyComp}
             onCancel={() => {
