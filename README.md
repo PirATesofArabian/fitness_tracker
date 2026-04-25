@@ -56,24 +56,6 @@ npm run dev
 
 4. Open [http://localhost:3000](http://localhost:3000) in your browser
 
-## 📱 Deployment
-
-### Deploy to Vercel (Recommended)
-
-1. Push your code to GitHub
-2. Go to [vercel.com](https://vercel.com)
-3. Sign in with GitHub
-4. Import your repository
-5. Click "Deploy"
-6. Your app will be live at `your-app.vercel.app`
-
-### Install on iPhone
-
-1. Open the deployed URL in Safari
-2. Tap the Share button
-3. Select "Add to Home Screen"
-4. The app will install like a native app!
-
 ## 🛠️ Tech Stack
 
 - **Framework**: Next.js 15 (App Router)
