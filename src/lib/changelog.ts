@@ -13,6 +13,34 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '1.3.1',
+    date: '2024-04-25',
+    changes: {
+      fixed: [
+        'Profile card now correctly displays data from body composition after onboarding',
+        '"Set Profile" button no longer appears after completing initial setup',
+        'Profile info now uses latest body composition data',
+      ],
+    },
+  },
+  {
+    version: '1.3.0',
+    date: '2024-04-25',
+    changes: {
+      added: [
+        'Comprehensive onboarding system for first-time users',
+        'Beautiful welcome screen explaining why body composition data is required',
+        'Preview Mode: Explore the app before entering data',
+        'Yellow banner in preview mode with "Complete Setup" button',
+        'Automatic app unlock after body composition data is entered',
+      ],
+      changed: [
+        'App now requires body composition data before allowing data entry',
+        'Improved first-time user experience with guided setup flow',
+     ],
+    },
+  },
+  {
     version: '1.2.0',
     date: '2024-04-25',
     changes: {
