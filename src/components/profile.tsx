@@ -6,11 +6,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  User, 
-  Scale, 
-  Ruler, 
-  Target, 
+import {
+  User,
+  Scale,
+  Ruler,
+  Target,
   Settings,
   ChevronRight,
   Save,
@@ -20,83 +20,101 @@ import {
   TrendingUp,
   Activity,
   Calculator,
-  Pencil
+  Pencil,
+  Sparkles
 } from 'lucide-react';
 import { useLocalStorage } from '@/lib/hooks';
 import { calculateBMRKatch, calculateLeanMass, calculateTDEE as calcTDEE, suggestActivityLevel } from '@/lib/calculations';
+import { BodyCompForm } from '@/components/body-comp-form';
+import { QuickWeightEntry } from '@/components/quick-weight-entry';
+import { WeightHistory } from '@/components/weight-history';
+import { GoalSelector } from '@/components/goal-selector';
+import { ChangelogDialog, ChangelogBadge } from '@/components/changelog-dialog';
+import { calculateGoalTargets } from '@/lib/goal-calculator';
+import type { FitnessGoal } from '@/lib/types';
+import type { ActivityLevel } from '@/lib/calculations';
 
-interface UserProfileFormProps {
-  onSave: (user: any) => void;
+interface SmartProfileFormProps {
+  latestWeight?: any;
+  latestBodyComp?: any;
+  currentGoal?: FitnessGoal;
+  currentActivityLevel?: ActivityLevel;
+  onSaveGoal: (goal: FitnessGoal, activityLevel: ActivityLevel) => void;
   onCancel: () => void;
-  initialUser?: any;
 }
 
-function UserProfileForm({ onSave, onCancel, initialUser }: UserProfileFormProps) {
-  const [name, setName] = useState(initialUser?.name || '');
-  const [weight, setWeight] = useState(initialUser?.weight?.toString() || '79');
-  const [height, setHeight] = useState(initialUser?.height?.toString() || '175');
-  const [bodyFat, setBodyFat] = useState(initialUser?.bodyFat?.toString() || '14');
-  const [age, setAge] = useState('25');
+function SmartProfileForm({
+  latestWeight,
+  latestBodyComp,
+  currentGoal = 'athletic',
+  currentActivityLevel = 'moderate',
+  onSaveGoal,
+  onCancel
+}: SmartProfileFormProps) {
+  // Extract data from latest logs
+  const weight = latestWeight?.weight || latestBodyComp?.weight || 79;
+  const bodyFat = latestBodyComp?.bodyFat || 14;
+  const height = latestBodyComp?.height || 175;
+  const age = latestBodyComp?.age || 25;
+  const gender = latestBodyComp?.gender || 'male';
+  const muscleMass = latestBodyComp?.muscleMass || 60;
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onSave({
-      id: initialUser?.id || crypto.randomUUID(),
-      name: name || 'Athlete',
-      weight: parseFloat(weight) || 79,
-      height: parseFloat(height) || 175,
-      bodyFat: parseFloat(bodyFat) || 14,
-      createdAt: initialUser?.createdAt || new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    });
-    onCancel();
-  };
-
-  const leanMass = calculateLeanMass(parseFloat(weight) || 79, parseFloat(bodyFat) || 14);
+  const leanMass = calculateLeanMass(weight, bodyFat);
   const bmrKatch = calculateBMRKatch(leanMass);
-  const tdee = calcTDEE(bmrKatch, 'moderate');
+  const tdee = calcTDEE(bmrKatch, currentActivityLevel);
+
+  // Calculate goal-based recommendations
+  let recommendation = null;
+  if (height && age && gender) {
+    try {
+      recommendation = calculateGoalTargets({
+        weight,
+        height,
+        age,
+        gender,
+        bodyFat,
+        muscleMass,
+        fitnessGoal: currentGoal,
+        activityLevel: currentActivityLevel,
+      });
+    } catch (error) {
+      console.error('Error calculating goal targets:', error);
+    }
+  }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="grid grid-cols-2 gap-3">
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Weight (kg)</label>
-          <Input
-            type="number"
-            value={weight}
-            onChange={(e) => setWeight(e.target.value)}
-            placeholder="79"
-          />
+    <div className="space-y-4">
+      {/* Read-only Profile Data */}
+      <div className="space-y-3">
+        <h3 className="text-sm font-medium">Current Profile</h3>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="p-3 rounded-lg bg-muted">
+            <p className="text-xs text-muted-foreground">Weight</p>
+            <p className="text-lg font-bold">{weight} kg</p>
+            <p className="text-xs text-muted-foreground">From daily log</p>
+          </div>
+          <div className="p-3 rounded-lg bg-muted">
+            <p className="text-xs text-muted-foreground">Body Fat</p>
+            <p className="text-lg font-bold">{bodyFat}%</p>
+            <p className="text-xs text-muted-foreground">From body comp</p>
+          </div>
+          <div className="p-3 rounded-lg bg-muted">
+            <p className="text-xs text-muted-foreground">Height</p>
+            <p className="text-lg font-bold">{height} cm</p>
+            <p className="text-xs text-muted-foreground">From body comp</p>
+          </div>
+          <div className="p-3 rounded-lg bg-muted">
+            <p className="text-xs text-muted-foreground">Age</p>
+            <p className="text-lg font-bold">{age} years</p>
+            <p className="text-xs text-muted-foreground">From body comp</p>
+          </div>
         </div>
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Height (cm)</label>
-          <Input
-            type="number"
-            value={height}
-            onChange={(e) => setHeight(e.target.value)}
-            placeholder="175"
-          />
-        </div>
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Body Fat %</label>
-          <Input
-            type="number"
-            value={bodyFat}
-            onChange={(e) => setBodyFat(e.target.value)}
-            placeholder="14"
-          />
-        </div>
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Age</label>
-          <Input
-            type="number"
-            value={age}
-            onChange={(e) => setAge(e.target.value)}
-            placeholder="25"
-          />
-        </div>
+        <p className="text-xs text-muted-foreground">
+          💡 Update weight via Daily Weight log, other metrics via Body Composition scan
+        </p>
       </div>
 
+      {/* Calculated Stats */}
       <div className="p-3 rounded-lg bg-muted space-y-2">
         <p className="text-sm font-medium flex items-center gap-2">
           <Activity className="h-4 w-4" />
@@ -108,153 +126,81 @@ function UserProfileForm({ onSave, onCancel, initialUser }: UserProfileFormProps
             <span className="font-medium">{leanMass.toFixed(1)} kg</span>
           </div>
           <div>
-            <span className="text-muted-foreground">BMR (Katch):</span>{' '}
-            <span className="font-medium">{bmrKatch} kcal</span>
+            <span className="text-muted-foreground">BMR:</span>{' '}
+            <span className="font-medium">{recommendation?.bmr || bmrKatch} kcal</span>
           </div>
           <div className="col-span-2">
-            <span className="text-muted-foreground">TDEE (moderate):</span>{' '}
-            <span className="font-medium">{tdee} kcal/day</span>
+            <span className="text-muted-foreground">TDEE:</span>{' '}
+            <span className="font-medium">{recommendation?.tdee || tdee} kcal/day</span>
           </div>
         </div>
       </div>
 
-      <div className="flex gap-2">
-        <Button type="button" variant="outline" onClick={onCancel} className="flex-1">
-          Cancel
-        </Button>
-        <Button type="submit" className="flex-1">
-          <Save className="h-4 w-4 mr-1" />
-          Save
-        </Button>
-      </div>
-    </form>
-  );
-}
-
-interface BodyCompFormProps {
-  onSave: (bodyComp: any) => void;
-  onCancel: () => void;
-  initial?: any;
-}
-
-function BodyCompForm({ onSave, onCancel, initial }: BodyCompFormProps) {
-  const [weight, setWeight] = useState(initial?.weight?.toString() || '79');
-  const [bodyFat, setBodyFat] = useState(initial?.bodyFat?.toString() || '14');
-  const [waist, setWaist] = useState(initial?.waist?.toString() || '');
-  const [chest, setChest] = useState(initial?.chest?.toString() || '');
-  const [arms, setArms] = useState(initial?.arms?.toString() || '');
-  const [thighs, setThighs] = useState(initial?.thighs?.toString() || '');
-  const [notes, setNotes] = useState(initial?.notes || '');
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onSave({
-      id: initial?.id || crypto.randomUUID(),
-      date: initial?.date || new Date().toISOString().split('T')[0],
-      createdAt: initial?.createdAt || new Date().toISOString(),
-      weight: parseFloat(weight) || 79,
-      bodyFat: parseFloat(bodyFat) || 14,
-      muscleMass: parseFloat(weight) * (1 - parseFloat(bodyFat) / 100),
-      waist: parseFloat(waist) || 0,
-      chest: parseFloat(chest) || 0,
-      arms: parseFloat(arms) || 0,
-      thighs: parseFloat(thighs) || 0,
-      notes,
-    });
-    onCancel();
-  };
-
-  return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="grid grid-cols-2 gap-3">
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Weight (kg)</label>
-          <Input
-            type="number"
-            value={weight}
-            onChange={(e) => setWeight(e.target.value)}
-            placeholder="79"
-          />
-        </div>
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Body Fat %</label>
-          <Input
-            type="number"
-            value={bodyFat}
-            onChange={(e) => setBodyFat(e.target.value)}
-            placeholder="14"
-          />
-        </div>
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Waist (cm)</label>
-          <Input
-            type="number"
-            value={waist}
-            onChange={(e) => setWaist(e.target.value)}
-            placeholder="80"
-          />
-        </div>
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Chest (cm)</label>
-          <Input
-            type="number"
-            value={chest}
-            onChange={(e) => setChest(e.target.value)}
-            placeholder="100"
-          />
-        </div>
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Arms (cm)</label>
-          <Input
-            type="number"
-            value={arms}
-            onChange={(e) => setArms(e.target.value)}
-            placeholder="35"
-          />
-        </div>
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Thighs (cm)</label>
-          <Input
-            type="number"
-            value={thighs}
-            onChange={(e) => setThighs(e.target.value)}
-            placeholder="55"
-          />
-        </div>
-      </div>
-      <div className="space-y-2">
-        <label className="text-sm font-medium">Notes</label>
-        <Input
-          value={notes}
-          onChange={(e) => setNotes(e.target.value)}
-          placeholder="How do you look/feel?"
+      {/* Goal Selection */}
+      {height && age && gender ? (
+        <GoalSelector
+          currentGoal={currentGoal}
+          currentActivityLevel={currentActivityLevel}
+          weight={weight}
+          height={height}
+          age={age}
+          gender={gender}
+          bodyFat={bodyFat}
+          muscleMass={muscleMass}
+          onSave={onSaveGoal}
         />
-      </div>
-      <div className="flex gap-2">
-        <Button type="button" variant="outline" onClick={onCancel} className="flex-1">
-          Cancel
-        </Button>
-        <Button type="submit" className="flex-1">
-          <Save className="h-4 w-4 mr-1" />
-          Save
-        </Button>
-      </div>
-    </form>
+      ) : (
+        <div className="p-4 rounded-lg bg-yellow-500/10 border border-yellow-500/20">
+          <p className="text-sm text-yellow-700 dark:text-yellow-300">
+            ⚠️ Please log a body composition scan with height, age, and gender to enable smart goal recommendations
+          </p>
+        </div>
+      )}
+
+      <Button type="button" variant="outline" onClick={onCancel} className="w-full">
+        Close
+      </Button>
+    </div>
   );
 }
+
+// BodyCompForm is now imported from body-comp-form.tsx
 
 export function ProfileSettings() {
-  const { data, setUser, addBodyComp, getBodyCompHistory, getLatestBodyComp, setGoals, getTDEE, deleteBodyComp, updateBodyComp, estimateTDEEFromData, weeklyAutoRecal } = useLocalStorage();
+  const {
+    data,
+    setUser,
+    addBodyComp,
+    getBodyCompHistory,
+    getLatestBodyComp,
+    setGoals,
+    getTDEE,
+    deleteBodyComp,
+    updateBodyComp,
+    estimateTDEEFromData,
+    weeklyAutoRecal,
+    addDailyWeight,
+    updateDailyWeight,
+    deleteDailyWeight,
+    getDailyWeights,
+    getLatestWeight
+  } = useLocalStorage();
+  
   const [showUserDialog, setShowUserDialog] = useState(false);
   const [showBodyCompDialog, setShowBodyCompDialog] = useState(false);
   const [showBodyCompListDialog, setShowBodyCompListDialog] = useState(false);
   const [showGoalsDialog, setShowGoalsDialog] = useState(false);
+  const [showWeightDialog, setShowWeightDialog] = useState(false);
+  const [showWeightHistoryDialog, setShowWeightHistoryDialog] = useState(false);
+  const [showChangelogDialog, setShowChangelogDialog] = useState(false);
   const [editingBodyComp, setEditingBodyComp] = useState<any>(null);
   const [goalsTab, setGoalsTab] = useState<'nutrition' | 'workout'>('nutrition');
 
   const user = data.user;
   const latestBodyComp = getLatestBodyComp();
   const bodyCompHistory = getBodyCompHistory();
+  const latestWeight = getLatestWeight();
+  const dailyWeights = getDailyWeights(30); // Last 30 entries
   const tdee = getTDEE();
   const tdeeEst = estimateTDEEFromData();
   const weeklyRec = weeklyAutoRecal();
@@ -271,30 +217,42 @@ export function ProfileSettings() {
     setShowGoalsDialog(true);
   };
 
-  const handleSaveUser = (userData: any) => {
-    setUser(userData);
-    
-    if (userData.weight && userData.bodyFat) {
-      const weight = parseFloat(userData.weight);
-      const bodyFat = parseFloat(userData.bodyFat);
-      const leanMass = weight * (1 - bodyFat / 100);
-      
-      const bmrKatch = 370 + (21.6 * leanMass);
-      const tdee = Math.round(bmrKatch * 1.55);
-      const targetCalories = tdee - 200;
-      
-      const protein = Math.round(weight * 2.0);
-      const fat = Math.round((targetCalories * 0.25) / 9);
-      const carbs = Math.round((targetCalories - (protein * 4) - (fat * 9)) / 4);
-      
-      setGoals({
-        dailyCalories: targetCalories,
-        dailyProtein: protein,
-        dailyCarbs: carbs,
-        dailyFat: fat,
-        dailyWater: 3000,
-        workoutDaysPerWeek: 4,
-      });
+  // Auto-calculate goals when goal or activity level changes
+  const handleGoalChange = (goal: FitnessGoal, activityLevel: ActivityLevel) => {
+    const weight = latestWeight?.weight || latestBodyComp?.weight || 79;
+    const bodyFat = latestBodyComp?.bodyFat || 14;
+    const height = latestBodyComp?.height || 175;
+    const age = latestBodyComp?.age || 25;
+    const gender = latestBodyComp?.gender || 'male';
+    const muscleMass = latestBodyComp?.muscleMass || 60;
+
+    if (height && age && gender) {
+      try {
+        const recommendation = calculateGoalTargets({
+          weight,
+          height,
+          age,
+          gender,
+          bodyFat,
+          muscleMass,
+          fitnessGoal: goal,
+          activityLevel,
+        });
+
+        setGoals({
+          fitnessGoal: goal,
+          activityLevel,
+          dailyCalories: recommendation.macros.calories,
+          dailyProtein: recommendation.macros.protein,
+          dailyCarbs: recommendation.macros.carbs,
+          dailyFat: recommendation.macros.fat,
+          dailyWater: 3000,
+          workoutDaysPerWeek: 4,
+          restDayCalorieAdjustment: -200,
+        });
+      } catch (error) {
+        console.error('Error calculating goal targets:', error);
+      }
     }
   };
 
@@ -361,6 +319,54 @@ export function ProfileSettings() {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-lg flex items-center gap-2">
+            <Scale className="h-5 w-5" />
+            Daily Weight
+          </CardTitle>
+          <Button size="sm" onClick={() => setShowWeightDialog(true)}>
+            Log
+          </Button>
+        </CardHeader>
+        <CardContent>
+          {latestWeight ? (
+            <div className="space-y-3">
+              <div className="flex justify-between items-center">
+                <div className="flex-1">
+                  <span className="text-sm text-muted-foreground">{latestWeight.date}</span>
+                  <div className="text-2xl font-bold">{latestWeight.weight} kg</div>
+                  {latestWeight.notes && (
+                    <p className="text-xs text-muted-foreground mt-1">{latestWeight.notes}</p>
+                  )}
+                </div>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => setShowWeightHistoryDialog(true)}
+                >
+                  <Pencil className="h-4 w-4" />
+                </Button>
+              </div>
+              {dailyWeights.length > 1 && (
+                <div className="pt-2">
+                  <button
+                    className="text-xs text-muted-foreground hover:underline"
+                    onClick={() => setShowWeightHistoryDialog(true)}
+                  >
+                    {dailyWeights.length} entries · View history
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground text-center py-4">
+              Track your daily weight to monitor progress
+            </p>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle className="text-lg flex items-center gap-2">
             <TrendingUp className="h-5 w-5" />
             Body Composition
           </CardTitle>
@@ -372,8 +378,20 @@ export function ProfileSettings() {
           {latestBodyComp ? (
             <div className="space-y-3">
               <div className="flex justify-between items-center text-sm">
-                <span className="text-muted-foreground">{latestBodyComp.date}</span>
-                <span className="font-medium">{latestBodyComp.weight}kg · {latestBodyComp.bodyFat}% BF</span>
+                <div className="flex-1">
+                  <span className="text-muted-foreground">{latestBodyComp.date}</span>
+                  <div className="font-medium mt-1">{latestBodyComp.weight}kg · {latestBodyComp.bodyFat}% BF</div>
+                </div>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => {
+                    setEditingBodyComp(latestBodyComp);
+                    setShowBodyCompDialog(true);
+                  }}
+                >
+                  <Pencil className="h-4 w-4" />
+                </Button>
               </div>
               <div className="grid grid-cols-4 gap-2 text-sm">
                 {latestBodyComp.waist > 0 && (
@@ -463,28 +481,17 @@ export function ProfileSettings() {
                   <span>Water</span>
                   <span className="font-medium">{goals.dailyWater}ml</span>
                 </div>
-                {user && (
-                  <Button size="sm" variant="outline" className="w-full mt-2" onClick={() => {
-                    if (user) {
-                      const weight = user.weight;
-                      const bodyFat = user.bodyFat;
-                      const leanMass = weight * (1 - bodyFat / 100);
-                      const bmrKatch = 370 + (21.6 * leanMass);
-                      const tdee = Math.round(bmrKatch * 1.55);
-                      const targetCalories = tdee - 200;
-                      const protein = Math.round(weight * 2.0);
-                      const fat = Math.round((targetCalories * 0.25) / 9);
-                      const carbs = Math.round((targetCalories - (protein * 4) - (fat * 9)) / 4);
-                      setGoals({
-                        dailyCalories: targetCalories,
-                        dailyProtein: protein,
-                        dailyCarbs: carbs,
-                        dailyFat: fat,
-                        dailyWater: goals.dailyWater,
-                        workoutDaysPerWeek: goals.workoutDaysPerWeek,
-                      });
-                    }
-                  }}>
+                {latestBodyComp?.height && latestBodyComp?.age && latestBodyComp?.gender && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="w-full mt-2"
+                    onClick={() => {
+                      const currentGoal = goals.fitnessGoal || 'athletic';
+                      const currentActivity = goals.activityLevel || 'moderate';
+                      handleGoalChange(currentGoal, currentActivity);
+                    }}
+                  >
                     Recalc from Profile
                   </Button>
                 )}
@@ -592,15 +599,55 @@ export function ProfileSettings() {
           </Card>
         )}
 
+      {/* What's New Card */}
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle className="text-lg flex items-center gap-2">
+            <Sparkles className="h-5 w-5 text-primary" />
+            What's New
+          </CardTitle>
+          <div className="relative">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setShowChangelogDialog(true)}
+            >
+              View Changelog
+            </Button>
+            <ChangelogBadge />
+          </div>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-muted-foreground">
+            Check out the latest features and improvements in version 1.1.0
+          </p>
+        </CardContent>
+      </Card>
+
+      {/* Auto-show changelog on first launch after update */}
+      <ChangelogDialog />
+
+      {/* Manual changelog dialog */}
+      <ChangelogDialog
+        open={showChangelogDialog}
+        onOpenChange={setShowChangelogDialog}
+      />
+
       <Dialog open={showUserDialog} onOpenChange={setShowUserDialog}>
-        <DialogContent>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Profile Settings</DialogTitle>
           </DialogHeader>
-          <UserProfileForm
-            onSave={handleSaveUser}
+          <SmartProfileForm
+            latestWeight={latestWeight}
+            latestBodyComp={latestBodyComp}
+            currentGoal={goals.fitnessGoal}
+            currentActivityLevel={goals.activityLevel}
+            onSaveGoal={(goal, activityLevel) => {
+              handleGoalChange(goal, activityLevel);
+              setShowUserDialog(false);
+            }}
             onCancel={() => setShowUserDialog(false)}
-            initialUser={user}
           />
         </DialogContent>
       </Dialog>
@@ -726,6 +773,21 @@ export function ProfileSettings() {
           </form>
         </DialogContent>
       </Dialog>
+
+      <QuickWeightEntry
+        open={showWeightDialog}
+        onOpenChange={setShowWeightDialog}
+        onSave={addDailyWeight}
+        initialWeight={latestWeight?.weight}
+      />
+
+      <WeightHistory
+        open={showWeightHistoryDialog}
+        onOpenChange={setShowWeightHistoryDialog}
+        weights={dailyWeights}
+        onUpdate={updateDailyWeight}
+        onDelete={deleteDailyWeight}
+      />
     </div>
   );
 }

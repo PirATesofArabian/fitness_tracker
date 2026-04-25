@@ -84,17 +84,55 @@ export type MuscleGroup =
   | 'core'
   | 'full-body';
 
+export type FitnessGoal = 'abs' | 'muscle' | 'athletic';
+
 export interface BodyComp {
   id: string;
   date: string;
   createdAt?: string;
+  
+  // Required fields
   weight: number;
   bodyFat: number;
   muscleMass: number;
+  bmi: number;
+  
+  // User profile fields (logged in body comp)
+  height?: number;
+  age?: number;
+  gender?: 'male' | 'female';
+  
+  // Optional advanced metrics
+  skeletalMuscleMass?: number;
+  bodyFatMass?: number;
+  totalBodyWater?: number;
+  protein?: number;
+  minerals?: number;
+  visceralFatLevel?: number;
+  basalMetabolicRate?: number;
+  
+  // Optional measurements
   waist: number;
   chest: number;
   arms: number;
   thighs: number;
+  hips?: number;
+  neck?: number;
+  
+  // Optional segmental analysis
+  segmental?: {
+    rightArm?: { fat: number; muscle: number };
+    leftArm?: { fat: number; muscle: number };
+    rightLeg?: { fat: number; muscle: number };
+    leftLeg?: { fat: number; muscle: number };
+    trunk?: { fat: number; muscle: number };
+  };
+  
+  // Metadata
+  testProvider?: string; // InBody, HDFC, etc.
+  testLocation?: string;
+  scanImage?: string; // Legacy: single image (kept for backward compatibility)
+  scanImages?: string[]; // New: multiple images support (Base64 encoded)
   notes: string;
 }
 
@@ -124,7 +162,19 @@ export interface Activity {
   speed?: number;
 }
 
+export interface DailyWeight {
+  id: string;
+  date: string;
+  weight: number;
+  notes?: string;
+  createdAt: string;
+}
+
 export interface Goals {
+  // Fitness goal
+  fitnessGoal?: FitnessGoal;
+  
+  // Calculated targets
   dailyCalories: number;
   dailyProtein: number;
   dailyCarbs: number;
@@ -132,6 +182,9 @@ export interface Goals {
   dailyWater: number;
   workoutDaysPerWeek: number;
   restDayCalorieAdjustment?: number; // Calorie reduction on rest days (default: -200)
+  
+  // Activity level for TDEE calculation
+  activityLevel?: 'sedentary' | 'light' | 'moderate' | 'active' | 'veryactive';
 }
 
 export interface AppData {
@@ -144,6 +197,7 @@ export interface AppData {
   exercises: Exercise[];
   goals: Goals;
   workoutTemplates: WorkoutTemplate[];
+  dailyWeights: DailyWeight[];
 }
 
 export interface WorkoutTemplate {
@@ -171,6 +225,7 @@ export const DEFAULT_EXERCISES: Exercise[] = [
 ];
 
 export const DEFAULT_GOALS: Goals = {
+  fitnessGoal: 'athletic',
   dailyCalories: 2500,
   dailyProtein: 180,
   dailyCarbs: 250,
@@ -178,6 +233,7 @@ export const DEFAULT_GOALS: Goals = {
   dailyWater: 3000,
   workoutDaysPerWeek: 4,
   restDayCalorieAdjustment: -200,
+  activityLevel: 'moderate',
 };
 
 export function calculateTotalWeight(addedWeight: number, bodyweight: number): number {

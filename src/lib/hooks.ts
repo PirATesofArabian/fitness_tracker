@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { AppData, DEFAULT_EXERCISES, DEFAULT_GOALS, DailyLog, Workout, Meal, BodyComp, Activity, User, Goals, WorkoutTemplate } from './types';
+import { AppData, DEFAULT_EXERCISES, DEFAULT_GOALS, DailyLog, Workout, Meal, BodyComp, Activity, User, Goals, WorkoutTemplate, DailyWeight } from './types';
 import { 
   calculateBMRMifflin, 
   calculateBMRKatch, 
@@ -23,6 +23,7 @@ const EMPTY_DATA: AppData = {
   exercises: DEFAULT_EXERCISES,
   goals: DEFAULT_GOALS,
   workoutTemplates: [],
+  dailyWeights: [],
 };
 
 let globalState: AppData = EMPTY_DATA;
@@ -215,11 +216,86 @@ const getTodayLog = useCallback((): DailyLog => {
   }, []);
 
   const addBodyComp = useCallback((comp: BodyComp) => {
+    setData(prev => {
+      // Check if there's already an entry for this date
+      const existingIndex = prev.bodyComps.findIndex(bc => bc.date === comp.date);
+      
+      if (existingIndex >= 0) {
+        // Replace existing entry for the same day
+        const updated = [...prev.bodyComps];
+        updated[existingIndex] = {
+          ...comp,
+          id: prev.bodyComps[existingIndex].id, // Keep the same ID
+          createdAt: prev.bodyComps[existingIndex].createdAt, // Keep original creation time
+        };
+        return {
+          ...prev,
+          bodyComps: updated,
+        };
+      } else {
+        // Add new entry
+        return {
+          ...prev,
+          bodyComps: [...prev.bodyComps, comp],
+        };
+      }
+    });
+  }, []);
+
+  const addDailyWeight = useCallback((weight: DailyWeight) => {
+    setData(prev => {
+      // Check if there's already an entry for this date
+      const existingIndex = prev.dailyWeights.findIndex(w => w.date === weight.date);
+      
+      if (existingIndex >= 0) {
+        // Replace existing entry for the same day
+        const updated = [...prev.dailyWeights];
+        updated[existingIndex] = {
+          ...weight,
+          id: prev.dailyWeights[existingIndex].id, // Keep the same ID
+          createdAt: prev.dailyWeights[existingIndex].createdAt, // Keep original creation time
+        };
+        return {
+          ...prev,
+          dailyWeights: updated,
+        };
+      } else {
+        // Add new entry
+        return {
+          ...prev,
+          dailyWeights: [...prev.dailyWeights, weight],
+        };
+      }
+    });
+  }, []);
+
+  const updateDailyWeight = useCallback((id: string, updates: Partial<DailyWeight>) => {
     setData(prev => ({
       ...prev,
-      bodyComps: [...prev.bodyComps, comp],
+      dailyWeights: prev.dailyWeights.map(w =>
+        w.id === id ? { ...w, ...updates } : w
+      ),
     }));
   }, []);
+
+  const deleteDailyWeight = useCallback((id: string) => {
+    setData(prev => ({
+      ...prev,
+      dailyWeights: prev.dailyWeights.filter(w => w.id !== id),
+    }));
+  }, []);
+
+  const getDailyWeights = useCallback((limit?: number) => {
+    const sorted = [...data.dailyWeights].sort((a, b) =>
+      b.date.localeCompare(a.date)
+    );
+    return limit ? sorted.slice(0, limit) : sorted;
+  }, [data.dailyWeights]);
+
+  const getLatestWeight = useCallback(() => {
+    const weights = getDailyWeights(1);
+    return weights[0] || null;
+  }, [getDailyWeights]);
 
   const setUser = useCallback((user: User) => {
     setData(prev => ({ ...prev, user }));
@@ -515,5 +591,10 @@ const getTodayLog = useCallback((): DailyLog => {
     loadWorkoutTemplate,
     getAdjustedCalorieTarget,
     getAdjustedMacros,
+    addDailyWeight,
+    updateDailyWeight,
+    deleteDailyWeight,
+    getDailyWeights,
+    getLatestWeight,
   };
 }

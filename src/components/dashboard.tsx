@@ -363,7 +363,7 @@ export function DailyDashboard() {
                     </p>
                   )}
                 </CardHeader>
-                <CardContent className="grid grid-cols-2 gap-8 py-8">
+                <CardContent className="grid grid-cols-2 gap-8 py-8 pb-12">
                   <div className="flex justify-center items-center">
                     <ProgressRing
                       value={calorieProgress}
