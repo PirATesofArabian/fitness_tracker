@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.1] - 2024-04-25
+
+### Fixed
+- Profile card now correctly displays data from body composition after onboarding
+- "Set Profile" button no longer appears after completing initial setup
+- Profile info now uses latest body composition data instead of deprecated user object
+
 ## [1.3.0] - 2024-04-25
 
 ### Added

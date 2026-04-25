@@ -13,6 +13,17 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '1.3.1',
+    date: '2024-04-25',
+    changes: {
+      fixed: [
+        'Profile card now correctly displays data from body composition after onboarding',
+        '"Set Profile" button no longer appears after completing initial setup',
+        'Profile info now uses latest body composition data',
+      ],
+    },
+  },
+  {
     version: '1.3.0',
     date: '2024-04-25',
     changes: {
