@@ -287,28 +287,28 @@ export function ProfileSettings() {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          {user ? (
+          {latestBodyComp && latestBodyComp.height && latestBodyComp.age && latestBodyComp.gender ? (
             <div className="space-y-3">
               <div className="flex justify-between items-center">
                 <div>
-                  <p className="font-medium">{user.name}</p>
+                  <p className="font-medium">Profile</p>
                   <p className="text-sm text-muted-foreground">
-                    {user.weight}kg · {user.height}cm · {user.bodyFat}% BF
+                    {latestWeight?.weight || latestBodyComp.weight}kg · {latestBodyComp.height}cm · {latestBodyComp.bodyFat}% BF
                   </p>
                 </div>
                 <Button size="sm" variant="outline" onClick={() => setShowUserDialog(true)}>
-                  Edit
+                  Edit Goals
                 </Button>
               </div>
               
               <div className="grid grid-cols-3 gap-2 text-sm">
                 <div className="p-2 rounded bg-muted">
                   <p className="text-muted-foreground">Lean Mass</p>
-                  <p className="font-medium">{calculateLeanMass(user.weight, user.bodyFat).toFixed(1)} kg</p>
+                  <p className="font-medium">{calculateLeanMass(latestWeight?.weight || latestBodyComp.weight, latestBodyComp.bodyFat).toFixed(1)} kg</p>
                 </div>
                 <div className="p-2 rounded bg-muted">
                   <p className="text-muted-foreground">BMR</p>
-                  <p className="font-medium">{calculateBMRKatch(calculateLeanMass(user.weight, user.bodyFat))} kcal</p>
+                  <p className="font-medium">{calculateBMRKatch(calculateLeanMass(latestWeight?.weight || latestBodyComp.weight, latestBodyComp.bodyFat))} kcal</p>
                 </div>
                 <div className="p-2 rounded bg-muted">
                   <p className="text-muted-foreground">TDEE</p>
