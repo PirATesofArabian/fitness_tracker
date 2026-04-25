@@ -163,4 +163,3 @@ export function ChangelogBadge() {
   );
 }
 
-// Made with Bob

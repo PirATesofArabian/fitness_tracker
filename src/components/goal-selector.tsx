@@ -328,4 +328,3 @@ export function GoalSelector({
   );
 }
 
-// Made with Bob

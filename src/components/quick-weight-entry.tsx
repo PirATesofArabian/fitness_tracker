@@ -84,4 +84,3 @@ export function QuickWeightEntry({ open, onOpenChange, onSave, initialWeight }: 
   );
 }
 
-// Made with Bob

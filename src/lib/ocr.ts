@@ -172,4 +172,3 @@ export async function preprocessImage(file: File): Promise<string> {
   });
 }
 
-// Made with Bob

@@ -103,4 +103,3 @@ export function getUnreadCount(): number {
   return getStoredNotifications().filter(n => !n.read).length;
 }
 
-// Made with Bob

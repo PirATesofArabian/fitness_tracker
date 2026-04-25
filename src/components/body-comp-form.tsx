@@ -568,4 +568,3 @@ export function BodyCompForm({ onSave, onCancel, initial }: BodyCompFormProps) {
   );
 }
 
-// Made with Bob

@@ -383,4 +383,3 @@ export function getGoalIcon(goal: FitnessGoal): string {
   }
 }
 
-// Made with Bob

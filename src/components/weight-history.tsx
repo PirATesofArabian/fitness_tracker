@@ -165,4 +165,3 @@ export function WeightHistory({ open, onOpenChange, weights, onUpdate, onDelete 
   );
 }
 
-// Made with Bob

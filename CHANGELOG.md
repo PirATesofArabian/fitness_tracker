@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.0] - 2024-04-25
+
+### Added
+- OCR body scan extraction from images
+- Intelligent InBody scan parsing
+- Automatic extraction of weight, body fat %, muscle mass, BMR
+- Support for multiple body scan formats
+- Error handling and validation for scan data
+
 ## [1.1.0] - 2024-04-25
 
 ### Added

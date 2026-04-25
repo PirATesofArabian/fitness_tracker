@@ -13,6 +13,19 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '1.2.0',
+    date: '2024-04-25',
+    changes: {
+      added: [
+        'OCR body scan extraction from images',
+        'Intelligent InBody scan parsing',
+        'Automatic extraction of weight, body fat %, muscle mass, BMR',
+        'Support for multiple body scan formats',
+        'Error handling and validation for scan data',
+      ],
+    },
+  },
+  {
     version: '1.1.0',
     date: '2024-04-25',
     changes: {
@@ -81,4 +94,3 @@ export function shouldShowChangelog(): boolean {
   return !hasSeenVersion(latestVersion);
 }
 
-// Made with Bob
